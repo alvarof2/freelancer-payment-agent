@@ -2,6 +2,62 @@
 
 Hackathon-friendly MVP for freelancers who want to create invoices fast, track payment states, and demo an agentic payment workflow without relying on external secrets or live money movement.
 
+## Pitch
+
+### Short pitch
+
+**Freelancer Payment Agent** is an AI-powered invoicing and payment assistant for freelancers and small businesses. It turns a simple plain-English request like _"Invoice Acme €500 for landing page design due next Friday"_ into a structured invoice, generates a MiniPay/Celo-style payment flow, and helps track the invoice from creation to payment confirmation.
+
+The core idea is simple: freelancers should not lose time to admin, payment chasing, and fragmented cross-border workflows. The agent handles the operational layer so they can focus on delivering work.
+
+### 30-second pitch
+
+Freelancers lose time and income because getting paid is still too manual.
+**Freelancer Payment Agent** uses AI to create invoices from natural language, guides clients through a MiniPay-style stablecoin checkout flow, and tracks payment status from sent to confirmed. It combines AI usability with Celo's payments story to make cross-border freelance payments feel fast, clear, and programmable.
+
+### 1-minute pitch
+
+Freelancers today juggle too many repetitive payment tasks: creating invoices, sending reminders, checking whether a client paid, and dealing with slow or expensive cross-border payments.
+
+**Freelancer Payment Agent** solves that with a lightweight AI + stablecoin workflow. A freelancer can simply type:
+
+> Invoice Acme €500 for landing page design due next Friday
+
+and the app turns that into a clean invoice automatically.
+
+From there, the client gets a MiniPay/Celo-style payment experience with a simple checkout flow, stablecoin-oriented payment rails, and clear confirmation states. On the freelancer side, the app tracks invoice status, surfaces outstanding revenue, and creates the foundation for smart automated follow-up.
+
+This project shows how AI agents and on-chain payments can work together in a practical, everyday use case — not abstract DeFi, but real people getting paid for real work.
+
+### Problem
+
+- Freelancers spend too much time on admin
+- Invoicing and follow-up are fragmented
+- Cross-border payments are often slow, opaque, and expensive
+- Existing tools are not designed for agentic workflows
+
+### Solution
+
+- AI-native invoice creation from plain English
+- MiniPay/Celo-style payment request flow
+- Stablecoin-friendly checkout story
+- Invoice tracking and follow-up readiness
+- Foundation for autonomous payment operations
+
+### Why this fits the hackathon
+
+- **AI angle:** natural-language invoice creation and an agent-ready workflow
+- **Celo/MiniPay angle:** stablecoin-first, mobile-friendly payment UX
+- **Real-world utility:** a clear cross-border use case for freelancers and small businesses
+
+### Tagline options
+
+- From plain English to paid
+- The AI agent that helps freelancers get paid
+- Invoice, collect, confirm
+- Freelance payments, powered by AI and stablecoins
+- Turn work into payment, faster
+
 ## What it includes
 
 - Next.js App Router frontend
