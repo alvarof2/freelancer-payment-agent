@@ -23,9 +23,14 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <StatusBadge status={invoice.status} />
         </div>
 
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/70 p-5 text-sm leading-7 text-slate-700">
+          <p className="font-semibold text-slate-950">Demo story</p>
+          <p className="mt-2">This invoice is now tuned for a MiniPay-on-Celo demo: open the client checkout, generate a payment request, walk through the mock wallet handoff, then confirm settlement back into the dashboard.</p>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
-          <InfoCard label="Client" value={invoice.clientName} subvalue={invoice.clientEmail} />
-          <InfoCard label="Amount" value={formatMoney(invoice.amount)} subvalue={invoice.currency} />
+          <InfoCard label="Client" value={invoice.clientName} subvalue={invoice.clientEmail || "Email not added"} />
+          <InfoCard label="Amount" value={formatMoney(invoice.amount, invoice.currency)} subvalue={invoice.currency} />
           <InfoCard label="Due date" value={formatDate(invoice.dueDate)} subvalue={`Reminders sent: ${invoice.reminderCount}`} />
           <InfoCard label="Payment rail" value={invoice.paymentRail} subvalue={invoice.paymentAddress} />
         </div>
@@ -35,11 +40,13 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <p className="mt-2 rounded-[1.5rem] bg-slate-50 p-5 text-sm leading-7 text-slate-700">{invoice.description}</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-violet-100 bg-violet-50/70 p-5 text-sm leading-7 text-slate-700">
-          <p className="font-semibold text-slate-950">Mock agent behavior</p>
-          <p className="mt-2">
-            Payment orchestration is intentionally stubbed. In a real version, this is where wallet monitoring, escrow release logic, or automated follow-up messages would be plugged in behind the same API layer.
-          </p>
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/pay/${invoice.id}`} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+            Open MiniPay checkout
+          </Link>
+          <Link href="/" className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            Back to dashboard
+          </Link>
         </div>
       </section>
 
@@ -48,8 +55,8 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm shadow-black/5">
           <p className="text-sm font-medium text-slate-500">Fast paths</p>
           <div className="mt-4 flex flex-col gap-3">
-            <Link href="/" className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-              Back to dashboard
+            <Link href={`/pay/${invoice.id}`} className="rounded-full border border-emerald-200 px-4 py-2 text-center text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+              Share MiniPay checkout
             </Link>
             <Link href="/invoices/new" className="rounded-full bg-slate-950 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-slate-800">
               Create another invoice

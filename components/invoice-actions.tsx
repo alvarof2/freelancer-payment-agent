@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PaymentStatus } from "@/lib/types";
 
@@ -35,7 +36,8 @@ export function InvoiceActions({ id, status }: { id: string; status: PaymentStat
 
   return (
     <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm shadow-black/5">
-      <div className="flex flex-wrap gap-3">
+      <p className="text-sm font-medium text-slate-500">Invoice controls</p>
+      <div className="mt-4 flex flex-wrap gap-3">
         {status !== "paid" ? (
           <button
             onClick={() => updateStatus("paid")}
@@ -71,6 +73,15 @@ export function InvoiceActions({ id, status }: { id: string; status: PaymentStat
           Send reminder stub
         </button>
       </div>
+
+      <div className="mt-4 rounded-[1.5rem] bg-slate-50 p-4 text-sm text-slate-600">
+        <p className="font-semibold text-slate-950">Client-facing step</p>
+        <p className="mt-1">Want the stronger demo beat? Open the MiniPay checkout and walk through the payment request, wallet handoff, mock hash, and final settlement.</p>
+        <Link href={`/pay/${id}`} className="mt-3 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-white">
+          Open MiniPay checkout
+        </Link>
+      </div>
+
       {message ? <p className="mt-3 text-sm text-slate-600">{message}</p> : null}
     </div>
   );

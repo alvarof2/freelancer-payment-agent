@@ -27,6 +27,7 @@ export interface InvoiceInput {
   amount: number;
   currency?: string;
   dueDate: string;
+  paymentRail?: string;
 }
 
 export interface EarningsSummary {
@@ -36,4 +37,37 @@ export interface EarningsSummary {
   overdue: number;
   draftCount: number;
   paidCount: number;
+}
+
+export type MockCheckoutState = "quote_ready" | "wallet_opened" | "submitted" | "confirmed";
+
+export interface MockPaymentQuote {
+  invoiceId: string;
+  sessionId: string;
+  state: MockCheckoutState;
+  wallet: string;
+  rail: string;
+  network: string;
+  token: string;
+  amount: number;
+  amountFormatted: string;
+  recipient: string;
+  feeEstimate: string;
+  reference: string;
+  memo: string;
+  expiresAt: string;
+  deepLink: string;
+  checkoutUrl: string;
+  estimatedArrival: string;
+  txHash?: string;
+  statusCopy: string;
+}
+
+export interface PaymentRailProvider {
+  key: string;
+  label: string;
+  createQuote(invoice: Invoice): MockPaymentQuote;
+  openWallet(invoice: Invoice, sessionId: string): MockPaymentQuote;
+  submitPayment(invoice: Invoice, sessionId: string): MockPaymentQuote;
+  confirmPayment(invoice: Invoice, sessionId: string): MockPaymentQuote;
 }

@@ -1,7 +1,9 @@
-export function formatMoney(amount: number, currency = "USDC") {
+export function formatMoney(amount: number, currency = "cUSD") {
+  const displayCurrency = currency === "USDC" || currency === "cUSD" ? "USD" : currency;
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: currency === "USDC" ? "USD" : currency,
+    currency: displayCurrency,
     maximumFractionDigits: 0,
   }).format(amount);
 }

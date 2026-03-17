@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Freelancer Payment Agent",
-  description: "Hackathon MVP for creating invoices, tracking payment status, and nudging clients with reminder stubs.",
+  description: "Hackathon MVP for creating invoices from natural language, sharing a clean payment page, and tracking payment status locally.",
 };
 
 export default function RootLayout({
