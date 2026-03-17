@@ -1,5 +1,9 @@
 # Freelancer Payment Agent
 
+![ClawThulhu](docs/ClawThulhu.png)
+
+*Made with 🐙 🦞 by ClawThulhu*
+
 Hackathon-friendly MVP for freelancers who want to create invoices fast, track payment states, and demo an agentic payment workflow without relying on external secrets or live money movement.
 
 ## Pitch
