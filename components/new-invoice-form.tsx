@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseInvoicePrompt } from "@/lib/invoice-parser";
+import { PaymentMode } from "@/lib/types";
 
 const initialState = {
   clientName: "",
@@ -10,12 +11,20 @@ const initialState = {
   projectName: "",
   description: "",
   amount: "",
-  currency: "cUSD",
-  paymentRail: "MiniPay / Celo / cUSD",
+  displayCurrency: "USDC",
+  settlementAssetCode: "USDC",
+  paymentMode: "stable" as PaymentMode,
+  recipientAddress: "0x442bd6872CCf450Ee37b0Ad9B869D291b9Be2eb0",
   dueDate: "",
 };
 
-const examplePrompt = "Invoice Acme €500 for landing page design due next Friday";
+const examplePrompt = "Invoice Álvaro 0.1 CELO for Sepolia payment test due tomorrow";
+
+function suggestSettlementAsset(displayCurrency: string, paymentMode: PaymentMode) {
+  if (paymentMode === "native") return "CELO";
+  if (displayCurrency.toUpperCase() === "CUSD") return "cUSD";
+  return "USDC";
+}
 
 export function NewInvoiceForm() {
   const router = useRouter();
@@ -28,16 +37,22 @@ export function NewInvoiceForm() {
   const parsedDraft = useMemo(() => parseInvoicePrompt(prompt), [prompt]);
 
   function applyParsedDraft() {
-    setForm((current) => ({
-      ...current,
-      clientName: parsedDraft.clientName || current.clientName,
-      clientEmail: parsedDraft.clientEmail || current.clientEmail,
-      projectName: parsedDraft.projectName || current.projectName,
-      description: parsedDraft.description || current.description,
-      amount: parsedDraft.amount || current.amount,
-      currency: parsedDraft.currency || current.currency,
-      dueDate: parsedDraft.dueDate || current.dueDate,
-    }));
+    setForm((current) => {
+      const displayCurrency = parsedDraft.currency || current.displayCurrency;
+      const paymentMode = displayCurrency.toUpperCase() === "CELO" ? "native" : current.paymentMode;
+      return {
+        ...current,
+        clientName: parsedDraft.clientName || current.clientName,
+        clientEmail: parsedDraft.clientEmail || current.clientEmail,
+        projectName: parsedDraft.projectName || current.projectName,
+        description: parsedDraft.description || current.description,
+        amount: parsedDraft.amount || current.amount,
+        displayCurrency,
+        paymentMode,
+        settlementAssetCode: suggestSettlementAsset(displayCurrency, paymentMode),
+        dueDate: parsedDraft.dueDate || current.dueDate,
+      };
+    });
 
     setParserMessage(
       parsedDraft.confidence === "high"
@@ -84,11 +99,7 @@ export function NewInvoiceForm() {
               Example: <span className="font-medium text-slate-950">{examplePrompt}</span>
             </p>
           </div>
-          <button
-            type="button"
-            onClick={applyParsedDraft}
-            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
+          <button type="button" onClick={applyParsedDraft} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
             Parse into fields
           </button>
         </div>
@@ -119,7 +130,7 @@ export function NewInvoiceForm() {
             </div>
             <dl className="mt-4 space-y-3 text-sm">
               <PreviewRow label="Client" value={parsedDraft.clientName || "Needs review"} />
-              <PreviewRow label="Amount" value={parsedDraft.amount ? `${parsedDraft.currency} ${parsedDraft.amount}` : "Needs review"} />
+              <PreviewRow label="Invoice currency" value={parsedDraft.amount ? `${parsedDraft.currency} ${parsedDraft.amount}` : "Needs review"} />
               <PreviewRow label="Project" value={parsedDraft.projectName || "Needs review"} />
               <PreviewRow label="Due" value={parsedDraft.dueDate || "Needs review"} />
             </dl>
@@ -150,37 +161,72 @@ export function NewInvoiceForm() {
             <input required value={form.projectName} onChange={(e) => setForm({ ...form, projectName: e.target.value })} className="input" />
           </Field>
           <Field label="Amount">
-            <input required type="number" min="1" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="input" />
+            <input required type="number" min="0.000001" step="any" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="input" />
           </Field>
-          <Field label="Currency">
-            <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="input">
-              <option value="cUSD">cUSD</option>
+          <Field label="Invoice display currency">
+            <select
+              value={form.displayCurrency}
+              onChange={(e) => {
+                const displayCurrency = e.target.value;
+                const paymentMode = displayCurrency.toUpperCase() === "CELO" ? "native" : form.paymentMode;
+                setForm({
+                  ...form,
+                  displayCurrency,
+                  paymentMode,
+                  settlementAssetCode: suggestSettlementAsset(displayCurrency, paymentMode),
+                });
+              }}
+              className="input"
+            >
+              <option value="CELO">CELO</option>
               <option value="USDC">USDC</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
+              <option value="cUSD">cUSD</option>
             </select>
           </Field>
           <Field label="Due date">
             <input required type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="input" />
           </Field>
-          <div className="md:col-span-2">
-            <Field label="Payment rail label">
-              <input value={form.paymentRail} onChange={(e) => setForm({ ...form, paymentRail: e.target.value })} className="input" />
-            </Field>
-          </div>
+          <Field label="Settlement mode">
+            <select
+              value={form.paymentMode}
+              onChange={(e) => {
+                const paymentMode = e.target.value as PaymentMode;
+                setForm({ ...form, paymentMode, settlementAssetCode: suggestSettlementAsset(form.displayCurrency, paymentMode) });
+              }}
+              className="input"
+            >
+              <option value="native">Native CELO</option>
+              <option value="stable">Stable token</option>
+            </select>
+          </Field>
+          <Field label="Settlement asset">
+            <select value={form.settlementAssetCode} onChange={(e) => setForm({ ...form, settlementAssetCode: e.target.value })} className="input">
+              <option value="CELO">CELO</option>
+              <option value="USDC">USDC</option>
+              <option value="cUSD">cUSD</option>
+            </select>
+          </Field>
+          <Field label="Payment network">
+            <input value="Celo Sepolia via MiniPay" readOnly className="input bg-slate-50 text-slate-500" />
+          </Field>
+          <Field label="Recipient wallet address">
+            <input value={form.recipientAddress} onChange={(e) => setForm({ ...form, recipientAddress: e.target.value })} className="input font-mono text-xs" />
+          </Field>
         </div>
         <Field label="Description">
           <textarea required rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input min-h-32" />
         </Field>
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+          <p><span className="font-semibold text-slate-900">Invoice currency:</span> {form.displayCurrency}</p>
+          <p className="mt-1"><span className="font-semibold text-slate-900">Settlement asset:</span> {form.settlementAssetCode}</p>
+          <p className="mt-1"><span className="font-semibold text-slate-900">Payment mode:</span> {form.paymentMode === "stable" ? "Stable token on Celo Sepolia" : "Native CELO on Celo Sepolia"}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            disabled={isSaving}
-            className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
-          >
+          <button disabled={isSaving} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
             {isSaving ? "Creating invoice..." : "Create invoice"}
           </button>
-          <p className="text-sm text-slate-500">All data stays local in <code>data/invoices.json</code>.</p>
+          <p className="text-sm text-slate-500">All data stays local in <code>data/invoices.json</code>. Use a real Celo Sepolia recipient. The invoice amount, settlement asset, and settlement mode are stored separately so checkout state stays consistent.</p>
         </div>
       </form>
     </div>

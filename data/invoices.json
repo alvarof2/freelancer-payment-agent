@@ -5,17 +5,70 @@
     "clientEmail": "finance@northstarlabs.dev",
     "projectName": "Design system sprint",
     "description": "Product design system audit, token cleanup, and component handoff.",
-    "amount": 2400,
-    "currency": "cUSD",
-    "dueDate": "2026-03-22T10:06:39.081Z",
-    "issuedAt": "2026-03-15T10:06:39.081Z",
-    "paymentAddress": "0x91fc...a4B2",
-    "paymentRail": "MiniPay / Celo / cUSD",
+    "display": {
+      "amount": 2400,
+      "currency": "USDC"
+    },
+    "dueDate": "2026-03-22T23:04:19.470Z",
+    "issuedAt": "2026-03-15T23:04:19.470Z",
+    "recipientAddress": "0x1111111111111111111111111111111111111111",
+    "paymentRoute": {
+      "providerKey": "minipay-celo-sepolia",
+      "providerLabel": "MiniPay",
+      "networkKey": "celo-sepolia",
+      "networkLabel": "Celo Sepolia",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 18
+      },
+      "supportsModes": [
+        "stable",
+        "native"
+      ]
+    },
     "status": "viewed",
     "reminderCount": 1,
-    "lastReminderAt": "2026-03-16T16:06:39.081Z",
-    "createdAt": "2026-03-15T10:06:39.081Z",
-    "updatedAt": "2026-03-16T22:06:39.081Z"
+    "lastReminderAt": "2026-03-16T23:04:19.470Z",
+    "createdAt": "2026-03-15T23:04:19.470Z",
+    "updatedAt": "2026-03-17T23:04:19.470Z",
+    "events": [
+      {
+        "id": "evt_0807e90c",
+        "type": "demo_reset",
+        "title": "Demo data refreshed",
+        "detail": "Seeded invoice state was reset for the next live presentation.",
+        "at": "2026-03-17T23:04:19.470Z"
+      },
+      {
+        "id": "evt_f5ade7fe",
+        "type": "reminder_generated",
+        "title": "Reminder draft generated",
+        "detail": "A checkout-oriented reminder was drafted after the client viewed but did not complete payment.",
+        "at": "2026-03-16T23:04:19.470Z"
+      },
+      {
+        "id": "evt_bb05cfba",
+        "type": "client_viewed",
+        "title": "Client opened the invoice",
+        "detail": "Northstar Labs viewed the hosted invoice and payment instructions.",
+        "at": "2026-03-16T11:04:19.470Z"
+      },
+      {
+        "id": "evt_bd0243c4",
+        "type": "created",
+        "title": "Invoice created",
+        "detail": "Created from the freelancer dashboard with MiniPay on Celo Sepolia as the payment route.",
+        "at": "2026-03-15T23:04:19.470Z"
+      },
+      {
+        "id": "evt_9309899a",
+        "type": "share_link_ready",
+        "title": "Shareable checkout link prepared",
+        "detail": "Hosted client payment page is ready to send.",
+        "at": "2026-03-15T23:04:19.470Z"
+      }
+    ]
   },
   {
     "id": "inv_demo_2",
@@ -23,17 +76,77 @@
     "clientEmail": "ap@orbitstudio.co",
     "projectName": "Landing page build",
     "description": "Responsive marketing site implementation with analytics hooks.",
-    "amount": 1800,
-    "currency": "cUSD",
-    "dueDate": "2026-03-14T10:06:39.081Z",
-    "issuedAt": "2026-03-07T10:06:39.082Z",
-    "paymentAddress": "0xa6d2...5F19",
-    "paymentRail": "MiniPay / Celo / cUSD",
+    "display": {
+      "amount": 1800,
+      "currency": "USDC"
+    },
+    "dueDate": "2026-03-14T23:04:19.470Z",
+    "issuedAt": "2026-03-07T23:04:19.470Z",
+    "recipientAddress": "0x2222222222222222222222222222222222222222",
+    "paymentRoute": {
+      "providerKey": "minipay-celo-sepolia",
+      "providerLabel": "MiniPay",
+      "networkKey": "celo-sepolia",
+      "networkLabel": "Celo Sepolia",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 18
+      },
+      "supportsModes": [
+        "stable",
+        "native"
+      ]
+    },
     "status": "overdue",
-    "reminderCount": 3,
-    "lastReminderAt": "2026-03-17T15:39:55.282Z",
-    "createdAt": "2026-03-07T10:06:39.082Z",
-    "updatedAt": "2026-03-17T15:39:55.282Z"
+    "reminderCount": 2,
+    "lastReminderAt": "2026-03-16T20:40:19.470Z",
+    "createdAt": "2026-03-07T23:04:19.470Z",
+    "updatedAt": "2026-03-17T23:04:19.470Z",
+    "events": [
+      {
+        "id": "evt_98a26190",
+        "type": "demo_reset",
+        "title": "Demo data refreshed",
+        "detail": "Seeded invoice state was reset for the next live presentation.",
+        "at": "2026-03-17T23:04:19.470Z"
+      },
+      {
+        "id": "evt_414c0c45",
+        "type": "reminder_generated",
+        "title": "Second reminder drafted",
+        "detail": "A firmer reminder was generated to recover the overdue receivable.",
+        "at": "2026-03-16T20:40:19.470Z"
+      },
+      {
+        "id": "evt_165484a5",
+        "type": "status_changed",
+        "title": "Invoice marked overdue",
+        "detail": "Due date passed without settlement, so the invoice moved into overdue follow-up mode.",
+        "at": "2026-03-14T23:04:19.470Z"
+      },
+      {
+        "id": "evt_f3043463",
+        "type": "reminder_generated",
+        "title": "Reminder draft generated",
+        "detail": "First reminder drafted after no acknowledgement in the initial follow-up window.",
+        "at": "2026-03-12T23:04:19.470Z"
+      },
+      {
+        "id": "evt_e4cb257f",
+        "type": "created",
+        "title": "Invoice created",
+        "detail": "Orbit Studio invoice created for the landing page implementation milestone.",
+        "at": "2026-03-07T23:04:19.470Z"
+      },
+      {
+        "id": "evt_654e2e2e",
+        "type": "share_link_ready",
+        "title": "Shareable checkout link prepared",
+        "detail": "Hosted client payment page was generated for the MiniPay handoff.",
+        "at": "2026-03-07T23:04:19.470Z"
+      }
+    ]
   },
   {
     "id": "inv_demo_3",
@@ -41,15 +154,213 @@
     "clientEmail": "payments@cometcommerce.com",
     "projectName": "Checkout optimization",
     "description": "Experiment design, funnel review, and checkout conversion recommendations.",
-    "amount": 3200,
-    "currency": "cUSD",
-    "dueDate": "2026-03-31T10:06:39.082Z",
-    "issuedAt": "2026-03-17T10:06:39.082Z",
-    "paymentAddress": "0x4b3e...e901",
-    "paymentRail": "MiniPay / Celo / cUSD",
+    "display": {
+      "amount": 3200,
+      "currency": "USDC"
+    },
+    "dueDate": "2026-03-31T23:04:19.470Z",
+    "issuedAt": "2026-03-17T23:04:19.470Z",
+    "recipientAddress": "0x3333333333333333333333333333333333333333",
+    "paymentRoute": {
+      "providerKey": "minipay-celo-sepolia",
+      "providerLabel": "MiniPay",
+      "networkKey": "celo-sepolia",
+      "networkLabel": "Celo Sepolia",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 18
+      },
+      "supportsModes": [
+        "stable",
+        "native"
+      ]
+    },
+    "status": "sent",
+    "reminderCount": 0,
+    "createdAt": "2026-03-17T23:04:19.470Z",
+    "updatedAt": "2026-03-17T23:04:19.470Z",
+    "events": [
+      {
+        "id": "evt_e15619ce",
+        "type": "demo_reset",
+        "title": "Demo data refreshed",
+        "detail": "Seeded invoice state was reset for the next live presentation.",
+        "at": "2026-03-17T23:04:19.470Z"
+      },
+      {
+        "id": "evt_b93432d6",
+        "type": "created",
+        "title": "Invoice created",
+        "detail": "New invoice is ready to share, with checkout preconfigured for Celo Sepolia.",
+        "at": "2026-03-17T23:04:19.470Z"
+      },
+      {
+        "id": "evt_2420a7fc",
+        "type": "share_link_ready",
+        "title": "Shareable checkout link prepared",
+        "detail": "Client payment page is ready for a live demo handoff.",
+        "at": "2026-03-17T23:04:19.470Z"
+      }
+    ]
+  },
+  {
+    "id": "inv_ebe04b63",
+    "clientName": "Álvaro",
+    "clientEmail": "",
+    "projectName": "Sepolia Payment Test",
+    "description": "Sepolia payment test",
+    "display": {
+      "amount": 0.1,
+      "currency": "USDC"
+    },
+    "dueDate": "2026-03-19T00:00:00.000Z",
+    "issuedAt": "2026-03-17T23:04:31.515Z",
+    "recipientAddress": "0x442bd6872CCf450Ee37b0Ad9B869D291b9Be2eb0",
+    "paymentRoute": {
+      "providerKey": "minipay-celo-sepolia",
+      "providerLabel": "MiniPay",
+      "networkKey": "celo-sepolia",
+      "networkLabel": "Celo Sepolia",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 18
+      },
+      "supportsModes": [
+        "stable",
+        "native"
+      ]
+    },
+    "status": "sent",
+    "reminderCount": 0,
+    "createdAt": "2026-03-17T23:04:31.515Z",
+    "updatedAt": "2026-03-17T23:04:31.515Z",
+    "events": [
+      {
+        "id": "evt_8a86002f",
+        "type": "created",
+        "title": "Invoice created",
+        "detail": "Invoice drafted for Álvaro from a structured input flow.",
+        "at": "2026-03-17T23:04:31.515Z"
+      },
+      {
+        "id": "evt_b59c7a91",
+        "type": "share_link_ready",
+        "title": "Shareable checkout link prepared",
+        "detail": "A client-facing payment page is ready to send immediately.",
+        "at": "2026-03-17T23:04:31.515Z"
+      }
+    ]
+  },
+  {
+    "id": "inv_a9530436",
+    "clientName": "Álvaro",
+    "clientEmail": "",
+    "projectName": "Sepolia Payment Test",
+    "description": "Sepolia payment test",
+    "display": {
+      "amount": 0.1,
+      "currency": "USDC"
+    },
+    "dueDate": "2026-03-19T00:00:00.000Z",
+    "issuedAt": "2026-03-17T23:07:50.619Z",
+    "recipientAddress": "0x442bd6872CCf450Ee37b0Ad9B869D291b9Be2eb0",
+    "paymentRoute": {
+      "providerKey": "minipay-celo-sepolia",
+      "providerLabel": "MiniPay",
+      "networkKey": "celo-sepolia",
+      "networkLabel": "Celo Sepolia",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 6,
+        "tokenAddress": "0x0000000000000000000000000000000000000001"
+      },
+      "supportsModes": [
+        "stable",
+        "native"
+      ]
+    },
     "status": "viewed",
     "reminderCount": 0,
-    "createdAt": "2026-03-17T10:06:39.082Z",
-    "updatedAt": "2026-03-17T15:37:48.067Z"
+    "createdAt": "2026-03-17T23:07:50.619Z",
+    "updatedAt": "2026-03-17T23:09:51.126Z",
+    "events": [
+      {
+        "id": "evt_b9fe621c",
+        "type": "payment_verification_failed",
+        "title": "Payment verification failed",
+        "detail": "No USDC transfer to 0x442b...2eb0 for at least 0.1 was found in that transaction.",
+        "at": "2026-03-17T23:09:51.126Z"
+      },
+      {
+        "id": "evt_b737170d",
+        "type": "payment_verification_failed",
+        "title": "Payment verification failed",
+        "detail": "Enter a valid 0x-prefixed transaction hash.",
+        "at": "2026-03-17T23:09:24.112Z"
+      },
+      {
+        "id": "evt_4b0e1849",
+        "type": "payment_request_generated",
+        "title": "Payment request generated",
+        "detail": "Celo Sepolia payment request sep-530436-lvaro was prepared for USDC settlement.",
+        "at": "2026-03-17T23:08:00.849Z"
+      },
+      {
+        "id": "evt_c8c1bdb9",
+        "type": "status_changed",
+        "title": "Status changed to viewed",
+        "detail": "Client opened the hosted checkout from the shareable payment link.",
+        "at": "2026-03-17T23:08:00.842Z"
+      },
+      {
+        "id": "evt_cd3113bf",
+        "type": "created",
+        "title": "Invoice created",
+        "detail": "Invoice drafted for Álvaro from a structured input flow.",
+        "at": "2026-03-17T23:07:50.619Z"
+      },
+      {
+        "id": "evt_0327286b",
+        "type": "share_link_ready",
+        "title": "Shareable checkout link prepared",
+        "detail": "A client-facing payment page is ready to send immediately.",
+        "at": "2026-03-17T23:07:50.619Z"
+      }
+    ],
+    "paymentRequest": {
+      "invoiceId": "inv_a9530436",
+      "sessionId": "cp_648c9fff437c",
+      "mode": "stable",
+      "state": "quote_ready",
+      "wallet": "MiniPay-compatible wallet",
+      "routeLabel": "MiniPay / Celo Sepolia / USDC",
+      "network": "Celo Sepolia",
+      "networkKey": "celo-sepolia",
+      "chainId": 11142220,
+      "rpcUrl": "https://forno.celo-sepolia.celo-testnet.org",
+      "settlementAsset": {
+        "code": "USDC",
+        "kind": "token",
+        "decimals": 6,
+        "tokenAddress": "0x0000000000000000000000000000000000000001"
+      },
+      "amount": 0.1,
+      "amountFormatted": "0.10 USDC",
+      "amountBaseUnits": "100000",
+      "recipient": "0x442bd6872CCf450Ee37b0Ad9B869D291b9Be2eb0",
+      "recipientShort": "0x442b...2eb0",
+      "feeEstimate": "Network fee paid in CELO",
+      "reference": "sep-530436-lvaro",
+      "memo": "Sepolia Payment Test • sep-530436-lvaro",
+      "expiresAt": "2026-03-17T23:38:00.843Z",
+      "deepLink": "minipay://pay?address=0x442bd6872CCf450Ee37b0Ad9B869D291b9Be2eb0&amount=0.1&token=USDC&chainId=11142220&reference=sep-530436-lvaro&memo=Sepolia+Payment+Test+%E2%80%A2+sep-530436-lvaro&paymentMode=stable&tokenAddress=0x0000000000000000000000000000000000000001",
+      "checkoutUrl": "/pay/inv_a9530436",
+      "estimatedArrival": "Usually within a few Celo Sepolia blocks after broadcast",
+      "explorerUrl": "https://celo-sepolia.blockscout.com/token/0x0000000000000000000000000000000000000001",
+      "statusCopy": "Payment request ready for USDC on Celo Sepolia. Open a wallet or paste a transaction hash after sending."
+    }
   }
 ]

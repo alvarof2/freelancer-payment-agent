@@ -4,78 +4,44 @@
 
 *Made with 🐙 🦞 by ClawThulhu*
 
-Hackathon-friendly MVP for freelancers who want to create invoices fast, track payment states, and demo an agentic payment workflow without relying on external secrets or live money movement.
+Hackathon-friendly MVP for freelancers who want to create invoices fast, track payment states, and demo an agentic payment workflow with real Celo Sepolia verification and no private keys stored in the app.
 
 ## Pitch
 
-### Short pitch
+**Freelancer Payment Agent** turns a plain-English request like _"Invoice Acme €500 for landing page design due next Friday"_ into a structured invoice, generates a Celo Sepolia payment request, and helps track the invoice from creation to verified settlement.
 
-**Freelancer Payment Agent** is an AI-powered invoicing and payment assistant for freelancers and small businesses. It turns a simple plain-English request like _"Invoice Acme €500 for landing page design due next Friday"_ into a structured invoice, generates a MiniPay/Celo-style payment flow, and helps track the invoice from creation to payment confirmation.
+The point is simple: freelancers should not lose time to admin, payment chasing, and fragmented cross-border workflows. The app keeps the AI workflow lightweight and the payment architecture clean enough to deepen later.
 
-The core idea is simple: freelancers should not lose time to admin, payment chasing, and fragmented cross-border workflows. The agent handles the operational layer so they can focus on delivering work.
+This iteration also makes the payment domain explicit: each invoice now stores (1) an invoice display currency, (2) a settlement asset/token, and (3) a payment mode/network route separately. That removes a bunch of subtle formatting/state bugs and makes future stablecoin expansion less brittle.
 
-### 30-second pitch
+## What changed in this iteration
 
-Freelancers lose time and income because getting paid is still too manual.
-**Freelancer Payment Agent** uses AI to create invoices from natural language, guides clients through a MiniPay-style stablecoin checkout flow, and tracks payment status from sent to confirmed. It combines AI usability with Celo's payments story to make cross-border freelance payments feel fast, clear, and programmable.
-
-### 1-minute pitch
-
-Freelancers today juggle too many repetitive payment tasks: creating invoices, sending reminders, checking whether a client paid, and dealing with slow or expensive cross-border payments.
-
-**Freelancer Payment Agent** solves that with a lightweight AI + stablecoin workflow. A freelancer can simply type:
-
-> Invoice Acme €500 for landing page design due next Friday
-
-and the app turns that into a clean invoice automatically.
-
-From there, the client gets a MiniPay/Celo-style payment experience with a simple checkout flow, stablecoin-oriented payment rails, and clear confirmation states. On the freelancer side, the app tracks invoice status, surfaces outstanding revenue, and creates the foundation for smart automated follow-up.
-
-This project shows how AI agents and on-chain payments can work together in a practical, everyday use case — not abstract DeFi, but real people getting paid for real work.
-
-### Problem
-
-- Freelancers spend too much time on admin
-- Invoicing and follow-up are fragmented
-- Cross-border payments are often slow, opaque, and expensive
-- Existing tools are not designed for agentic workflows
-
-### Solution
-
-- AI-native invoice creation from plain English
-- MiniPay/Celo-style payment request flow
-- Stablecoin-friendly checkout story
-- Invoice tracking and follow-up readiness
-- Foundation for autonomous payment operations
-
-### Why this fits the hackathon
-
-- **AI angle:** natural-language invoice creation and an agent-ready workflow
-- **Celo/MiniPay angle:** stablecoin-first, mobile-friendly payment UX
-- **Real-world utility:** a clear cross-border use case for freelancers and small businesses
-
-### Tagline options
-
-- From plain English to paid
-- The AI agent that helps freelancers get paid
-- Invoice, collect, confirm
-- Freelance payments, powered by AI and stablecoins
-- Turn work into payment, faster
+- Replaced the purely mock checkout with a **Sepolia-aware payment request architecture**
+- Added **dual-mode Celo Sepolia checkout support**:
+  - **stable-token mode** when `CELO_SEPOLIA_STABLE_TOKEN_ADDRESS` is configured
+  - **native-CELO mode** for end-to-end testing when the payer only has CELO
+- Added **automatic fallback to native CELO** when stable-token mode is selected but no stable token contract is configured
+- Added **manual tx-hash submission + onchain verification**
+- Invoices are now marked `paid` **only after successful verification**
+- Added stored payment request / payment verification metadata to the invoice model
+- Refactored the invoice domain model so display currency, settlement asset, and payment route/mode are explicit instead of overloaded into one field
+- Timeline/history now logs request generation, wallet handoff, verification success, and verification failures
 
 ## What it includes
 
 - Next.js App Router frontend
-- Dashboard with earnings summary, recent invoices, and a tighter presentation flow
+- Dashboard with earnings summary, recent invoices, follow-up-now signals, and a weekly finance assistant panel
 - Natural-language invoice drafting with a local fallback parser
 - Structured invoice creation form with editable parser output
-- Invoice detail page with demo controls
-- Client-facing MiniPay-style payment page for a shareable checkout handoff
-- Mock MiniPay/Celo/cUSD checkout flow with payment request, wallet-open state, tx preview/hash, and confirmation states
-- Provider-style payment architecture in `lib/payment-provider.ts` so the mock can be swapped for a real chain integration later
-- Mock payment status tracking (`sent`, `viewed`, `paid`, `overdue`)
-- Reminder action stub exposed through an API route
-- Local JSON persistence in `data/invoices.json`
-- Minimal UI tuned for demos
+- Invoice detail page with agent-generated reminder copy, next-action guidance, and a persistent local event timeline/history
+- Client-facing hosted checkout flow for Celo Sepolia
+- Payment provider abstraction in `lib/payment-provider.ts`
+- Celo Sepolia request + verification logic in `lib/celo.ts`
+- Manual tx-hash verification flow backed by Celo Sepolia RPC
+- Native CELO verification that checks both **recipient** and **value** onchain
+- Seeded demo reset flow so the dashboard and invoice states can be restored before each judge run
+- Local SQLite persistence in `data/invoices.db`
+- One-time JSON bootstrap from `data/invoices.json` when the database is empty
 
 ## Stack
 
@@ -83,7 +49,7 @@ This project shows how AI agents and on-chain payments can work together in a pr
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- File-based JSON persistence for speed and zero setup
+- Built-in SQLite persistence (`node:sqlite`) for zero extra service setup
 
 ## Getting started
 
@@ -96,38 +62,113 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## MiniPay/Celo demo flow
+## Data storage
 
-The default payment rail is now **MiniPay / Celo / cUSD**.
+Primary store:
+- `data/invoices.db`
 
-### Checkout architecture
+Compatibility/backup flows:
+- `npm run db:import-json` — import `data/invoices.json` into SQLite
+- `npm run db:export-json` — export SQLite back to `data/invoices.json`
 
-- `lib/payment-provider.ts` contains the mock provider and the swappable `PaymentRailProvider` interface.
-- `POST /api/invoices/:id/checkout` drives the checkout state machine.
-- The client payment page consumes that route to move through these states:
-  1. `quote_ready`
-  2. `wallet_opened`
-  3. `submitted`
-  4. `confirmed`
-- Only the final `confirm` step marks the invoice as paid in local storage.
+Behavior notes:
+- On first run, if the SQLite DB is empty, the app bootstraps from `data/invoices.json` when present.
+- Runtime storage now uses normalized SQLite tables for invoices, events, payment requests, and payment verifications.
+- SQLite runtime sidecar files (`*.db-wal`, `*.db-shm`) are generated locally and ignored in git.
 
-### What the payment page shows
+## Optional environment configuration
 
-- MiniPay-oriented copy and hosted checkout framing
-- Celo mainnet / cUSD transaction preview
-- Mock fee estimate
-- Deep-link style handoff (`minipay://pay?...`)
-- Reference + memo
-- Mock transaction hash after submit
-- Confirmation copy that updates the freelancer dashboard
+The app works without secrets.
+
+If you set a stable token contract, the checkout defaults to **stable-token mode** and verifies ERC-20 transfers.
+If you do not set one, the app still works in **native CELO mode** so you can test the full payment flow with only CELO on Celo Sepolia.
+
+```bash
+export CELO_SEPOLIA_RPC_URL=https://forno.celo-sepolia.celo-testnet.org
+export CELO_SEPOLIA_CHAIN_ID=11142220
+
+# Optional: enable stable-token mode with a specific Sepolia token contract
+export CELO_SEPOLIA_STABLE_TOKEN_ADDRESS=0x0000000000000000000000000000000000000001
+export NEXT_PUBLIC_CELO_SEPOLIA_STABLE_TOKEN_ADDRESS=0x0000000000000000000000000000000000000001
+export NEXT_PUBLIC_CELO_STABLE_SYMBOL=USDC
+export NEXT_PUBLIC_CELO_STABLE_DECIMALS=6
+```
+
+Or copy `.env.example` to `.env.local`.
+
+### Verification rules
+
+- If `CELO_SEPOLIA_STABLE_TOKEN_ADDRESS` is set, the verifier looks for an ERC-20 `Transfer` log to the invoice recipient for at least the invoice amount.
+- If the checkout runs in **native CELO mode**, the verifier checks:
+  - the transaction succeeded on Celo Sepolia
+  - the recipient address matches the invoice payment address
+  - the native value sent is at least the invoice amount in CELO units
+
+## Celo Sepolia checkout flow
+
+The payment experience now supports both:
+
+- **Stable-token mode** — best when you have Sepolia USDC or another configured stable token
+- **Native CELO mode** — best for hackathon testing when you only have CELO in the wallet
+
+### Architecture
+
+- `lib/payment-provider.ts` exposes the payment provider interface
+- `lib/celo.ts` builds Sepolia payment requests and verifies tx hashes against Forno
+- `POST /api/invoices/:id/checkout` drives request generation, wallet handoff, mode selection, and verification
+- `data/invoices.db` stores invoice data in SQLite tables for invoices, timeline events, payment requests, and payment verification metadata
+- `data/invoices.json` is still supported as a bootstrap/import source and optional export backup
+- Legacy invoice JSON with `currency`, `paymentRail`, and `paymentAddress` is normalized on read so older demo data still works
+
+### Payment page behavior
+
+1. Open the hosted checkout
+2. Choose **stable token** or **native CELO**
+3. Generate the payment request
+4. Optionally try the wallet handoff / deep link (best on compatible wallets or mobile; desktop may do nothing)
+5. Submit a transaction in a wallet
+6. Paste the tx hash into the hosted checkout
+7. The app verifies it on Celo Sepolia
+8. Only then does the invoice move to `paid`
+
+If stable-token mode is selected without a configured token address, the server automatically falls back to native CELO so the flow remains demoable.
+
+### What the payment page shows now
+
+- explicit pending / verifying / confirmed / needs-attention states
+- a clearer manual-send flow with step-by-step instructions
+- Celo Sepolia network info
+- chainId and RPC URL
+- selected payment mode
+- recipient wallet address with copy actions
+- asset symbol and optional token contract
+- invoice display amount plus settlement amount/base units
+- reference + memo with copy actions
+- visible deep-link style wallet handoff URL with copy fallback
+- clearer explorer links for both recipient address and submitted tx hash
+- smoother success/failure messaging around verification
+- invoice history alongside the checkout
+
+## Fast test plan: native CELO only
+
+If you only have CELO on Celo Sepolia:
+
+1. Leave `CELO_SEPOLIA_STABLE_TOKEN_ADDRESS` unset
+2. Run the app
+3. Create an invoice with a real Celo Sepolia recipient address you control
+4. Open the hosted checkout
+5. Keep **Native CELO** selected
+6. Generate the payment request and send the payment from your wallet
+7. Paste the tx hash
+8. Verify the payment and confirm the invoice moves to `paid`
 
 ## Demo script
 
 ### 1. Start on the dashboard
 
-- Show total collected, outstanding, and the count of Celo-ready invoice links.
-- Explain that the app is fully local and secret-free.
-- Point out the suggested presentation flow card.
+- Show total collected, outstanding, and the count of Celo-ready invoice links
+- Point out the weekly finance assistant panel and follow-up-now cards
+- Mention the **Reset demo data** control so judges know the flow is repeatable
 
 ### 2. Create an invoice from plain English
 
@@ -138,54 +179,59 @@ Invoice Acme €500 for landing page design due next Friday
 ```
 
 Then:
-
-- Click **Parse into fields**.
-- Show the parser preview and fallback notes.
-- Mention that the parser is intentionally lightweight but always leaves the structured fields editable.
-- Create the invoice.
+- Click **Parse into fields**
+- Review the structured fields
+- Paste a real Celo Sepolia recipient address
+- Create the invoice
 
 ### 3. Show the invoice detail page
 
-- Review the generated amount, due date, payment rail, and scope.
-- Point out that the invoice is already configured for MiniPay/Celo/cUSD.
-- Click **Open MiniPay checkout**.
+- Review the generated amount, due date, payment rail, and recipient address
+- Demo the agent recommendation card and reminder draft
+- Show the timeline/history
+- Click **Open Celo Sepolia checkout**
 
-### 4. Show the client-facing MiniPay checkout
+### 4. Show the hosted checkout
 
-- Explain that this is the link you would send to the client.
-- Click **Generate MiniPay payment request**.
-- Click **Open MiniPay mock checkout**.
-- Click **Submit mock Celo transaction**.
-- Point out the generated mock transaction hash.
-- Click **Confirm local settlement**.
+- Pick **Native CELO** for the simplest live demo, or **Stable token** if configured
+- Generate the payment request
+- Point out the explicit pending state and the manual-send instructions
+- Optionally click the wallet handoff step or copy the deep link into a compatible wallet
+- If the handoff does nothing, copy the recipient/amount/reference manually and send from a test wallet
+- Paste the tx hash into the checkout
+- Click **Verify ... tx hash**
+- Show the verifying state, the explorer links, and then the confirmed result with updated history
 
 ### 5. Close the loop on the dashboard
 
-- Return to `/`.
-- Show that the invoice status and totals have updated.
-- Optionally trigger **Send reminder stub** on another invoice to show the follow-up automation path.
+- Return to `/`
+- Show that invoice status and totals updated only after verification
+- Optionally open the invoice again to show the final payment event in the timeline
+- Hit **Reset demo data** for the next walkthrough
 
 ## API routes
 
 - `GET /api/invoices` — list invoices
 - `POST /api/invoices` — create invoice
-- `POST /api/invoices/:id/status` — update mock payment status
+- `POST /api/invoices/:id/status` — update invoice status manually
 - `POST /api/invoices/:id/reminder` — trigger reminder stub
-- `POST /api/invoices/:id/checkout` — drive the MiniPay/Celo mock checkout flow
+- `POST /api/invoices/:id/checkout` — generate request, open wallet handoff, choose payment mode, and verify tx hash
+- `POST /api/invoices/reset` — restore the seeded demo dataset
 
 ## Notes
 
-- No wallet, escrow, or email provider is wired in yet. Those are intentionally mocked behind route handlers so they can be replaced later.
-- Seed data is created automatically on first run.
-- JSON persistence was chosen over SQLite to keep the MVP frictionless for a hackathon demo.
-- The parser is heuristic-based on purpose: good enough for common prompts, transparent when confidence drops, and easy to replace with an LLM/API later.
-- `formatMoney()` maps `cUSD` and `USDC` to USD formatting so the UI still reads naturally.
+- No wallet keys are stored in the app
+- Wallet handoff is optional UX; tx-hash verification is the required settlement path
+- Native CELO mode is intentionally first-class so the project stays easy to demo under hackathon conditions
+- Seed data is created automatically on first run and can be restored from the dashboard
+- Persistence now uses SQLite with zero extra service setup; the old JSON file remains useful for import/export and backup
+- The parser is heuristic-based on purpose: good enough for common prompts, transparent when confidence drops, and easy to replace later
+- `formatMoney()` now renders settlement assets explicitly (for example `USDC`, `cUSD`, and `CELO`) so the UI never falls back to fiat-style labels
 
 ## Suggested next steps
 
-- Swap the mock payment provider for a real MiniPay/Celo integration
-- Persist checkout event history instead of generating ephemeral mock session state
+- Add first-class MiniPay-native handoff and return flows
+- Add a real token registry for Celo Sepolia and mainnet assets
+- Add webhook/event-driven reconciliation on top of manual tx-hash verification
 - Add authentication for freelancer/client portals
 - Attach PDFs and hosted payment links
-- Connect real reminder channels (email, Telegram, on-chain attestations, etc.)
-- Add webhook/event history for payment milestones

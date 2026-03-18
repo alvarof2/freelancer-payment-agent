@@ -87,17 +87,19 @@ export function parseInvoicePrompt(prompt: string): ParsedInvoiceDraft {
   const notes: string[] = [];
   const lowered = cleanedPrompt.toLowerCase();
 
-  const amountMatch = cleanedPrompt.match(/(?:€|eur\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?(?:€|eur)|(?:\$|usd\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?(?:\$|usd)|(?:usdc\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?usdc/i);
+  const amountMatch = cleanedPrompt.match(
+    /(?:usdc\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?usdc|(?:cusd\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?cusd|(?:celo\s?)(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s?celo/i,
+  );
 
   let amount = "";
-  let currency = "USDC";
+  let currency = "CELO";
 
   if (amountMatch) {
     const rawAmount = amountMatch.slice(1).find(Boolean)?.replace(",", ".") ?? "";
     amount = rawAmount;
-    if (/[€]|\beur\b/i.test(amountMatch[0])) currency = "EUR";
-    if (/[\$]|\busd\b/i.test(amountMatch[0])) currency = "USD";
     if (/usdc/i.test(amountMatch[0])) currency = "USDC";
+    else if (/cusd/i.test(amountMatch[0])) currency = "cUSD";
+    else if (/celo/i.test(amountMatch[0])) currency = "CELO";
   } else {
     notes.push("Could not confidently detect the amount.");
   }

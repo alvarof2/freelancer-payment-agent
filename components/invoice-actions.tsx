@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PaymentStatus } from "@/lib/types";
 
-export function InvoiceActions({ id, status }: { id: string; status: PaymentStatus }) {
+export function InvoiceActions({ id, status, payHref }: { id: string; status: PaymentStatus; payHref?: string }) {
   const router = useRouter();
   const [isBusy, setIsBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [reminderPreview, setReminderPreview] = useState<{ subject: string; body: string } | null>(null);
 
   async function updateStatus(nextStatus: PaymentStatus) {
     setIsBusy(true);
@@ -30,8 +31,15 @@ export function InvoiceActions({ id, status }: { id: string; status: PaymentStat
     const response = await fetch(`/api/invoices/${id}/reminder`, { method: "POST" });
     const data = await response.json();
     setMessage(data.message ?? "Reminder stub sent.");
+    setReminderPreview(data.reminderDraft ?? null);
     setIsBusy(false);
     router.refresh();
+  }
+
+  async function copyShareLink() {
+    const url = `${window.location.origin}${payHref ?? `/pay/${id}`}`;
+    await navigator.clipboard.writeText(url);
+    setMessage("Shareable client payment link copied.");
   }
 
   return (
@@ -70,17 +78,33 @@ export function InvoiceActions({ id, status }: { id: string; status: PaymentStat
           disabled={isBusy}
           className="rounded-full border border-violet-200 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:opacity-50"
         >
-          Send reminder stub
+          Generate reminder draft
+        </button>
+        <button
+          onClick={copyShareLink}
+          className="rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+        >
+          Copy share link
         </button>
       </div>
 
       <div className="mt-4 rounded-[1.5rem] bg-slate-50 p-4 text-sm text-slate-600">
         <p className="font-semibold text-slate-950">Client-facing step</p>
-        <p className="mt-1">Want the stronger demo beat? Open the MiniPay checkout and walk through the payment request, wallet handoff, mock hash, and final settlement.</p>
-        <Link href={`/pay/${id}`} className="mt-3 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-white">
+        <p className="mt-1">Want the stronger demo beat? Open the checkout and walk through the payment request, wallet handoff, tx hash, and final settlement in stable-token or native-CELO mode.</p>
+        <Link href={payHref ?? `/pay/${id}`} className="mt-3 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-white">
           Open MiniPay checkout
         </Link>
       </div>
+
+      {reminderPreview ? (
+        <div className="mt-4 rounded-[1.5rem] border border-violet-100 bg-violet-50/70 p-4 text-sm text-slate-700">
+          <p className="font-semibold text-slate-950">Latest reminder draft</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Subject</p>
+          <p className="mt-1 font-medium text-slate-950">{reminderPreview.subject}</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Message</p>
+          <p className="mt-2 whitespace-pre-line leading-6">{reminderPreview.body}</p>
+        </div>
+      ) : null}
 
       {message ? <p className="mt-3 text-sm text-slate-600">{message}</p> : null}
     </div>

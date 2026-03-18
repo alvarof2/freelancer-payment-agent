@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:import-json": "node scripts/json-to-sqlite.mjs",
+    "db:export-json": "node scripts/sqlite-to-json.mjs"
   },
   "dependencies": {
     "next": "16.1.7",
