@@ -18,7 +18,7 @@ const initialState = {
   dueDate: "",
 };
 
-const examplePrompt = "Invoice Álvaro 0.1 CELO for Sepolia payment test due tomorrow";
+const examplePrompt = "Invoice Acme Studio 0.1 USDC for landing page implementation due next Friday";
 
 function suggestSettlementAsset(displayCurrency: string, paymentMode: PaymentMode) {
   if (paymentMode === "native") return "CELO";
@@ -226,7 +226,7 @@ export function NewInvoiceForm() {
           <button disabled={isSaving} className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
             {isSaving ? "Creating invoice..." : "Create invoice"}
           </button>
-          <p className="text-sm text-slate-500">All data stays local in <code>data/invoices.json</code>. Use a real Celo Sepolia recipient. The invoice amount, settlement asset, and settlement mode are stored separately so checkout state stays consistent.</p>
+          <p className="text-sm text-slate-500">All data stays local in <code>data/invoices.db</code>. Use a real Celo Sepolia recipient. The invoice amount, settlement asset, and settlement mode are stored separately so checkout state stays consistent.</p>
         </div>
       </form>
     </div>

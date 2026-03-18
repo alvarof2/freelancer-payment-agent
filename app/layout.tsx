@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { isAuthenticated } from "@/lib/auth";
+import { LogoutButton } from "@/components/logout-button";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,11 +20,13 @@ export const metadata: Metadata = {
   description: "Hackathon MVP for creating invoices from natural language, sharing a clean payment page, and tracking payment status locally.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const authenticated = await isAuthenticated();
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} bg-slate-50 text-slate-950 antialiased`}>
@@ -32,13 +36,22 @@ export default function RootLayout({
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-violet-600">Freelancer Payment Agent</p>
               <h1 className="text-2xl font-semibold tracking-tight">Get invoices out fast. Track cash with less chaos.</h1>
             </div>
-            <nav className="flex flex-wrap gap-3 text-sm font-medium text-slate-600">
-              <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950">
-                Dashboard
-              </Link>
-              <Link href="/invoices/new" className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950">
-                New invoice
-              </Link>
+            <nav className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-600">
+              {authenticated ? (
+                <>
+                  <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950">
+                    Dashboard
+                  </Link>
+                  <Link href="/invoices/new" className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950">
+                    New invoice
+                  </Link>
+                  <LogoutButton />
+                </>
+              ) : (
+                <Link href="/login" className="rounded-full px-4 py-2 transition hover:bg-slate-100 hover:text-slate-950">
+                  Login
+                </Link>
+              )}
             </nav>
           </header>
           {children}

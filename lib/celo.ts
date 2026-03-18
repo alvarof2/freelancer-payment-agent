@@ -3,6 +3,13 @@ import { formatSettlementAmount } from "@/lib/format";
 import { inferInvoicePaymentMode } from "@/lib/payment-mode";
 import { Invoice, PaymentMode, PaymentRequest, PaymentVerificationResult, SettlementAsset } from "@/lib/types";
 
+export interface PaymentPollCandidate {
+  txHash: string;
+  blockNumber?: number;
+  mode: PaymentMode;
+  source: "erc20-transfer-log" | "native-transfer-scan";
+}
+
 export const CELO_SEPOLIA = {
   chainId: Number(process.env.CELO_SEPOLIA_CHAIN_ID || "11142220"),
   name: "Celo Sepolia",
@@ -23,7 +30,7 @@ function hash(input: string) {
   return createHash("sha256").update(input).digest("hex");
 }
 
-function normalizeAddress(address: string) {
+export function normalizeAddress(address: string) {
   return address.trim().toLowerCase();
 }
 
@@ -35,7 +42,7 @@ function toPaddedTopicAddress(address: string) {
   return `0x${normalizeAddress(address).replace(/^0x/, "").padStart(64, "0")}`;
 }
 
-function parseUnits(value: number, decimals: number) {
+export function parseUnits(value: number, decimals: number) {
   const [whole, fraction = ""] = value.toString().split(".");
   const fractionPadded = `${fraction}${"0".repeat(decimals)}`.slice(0, decimals);
   return BigInt(whole || "0") * (BigInt(10) ** BigInt(decimals)) + BigInt(fractionPadded || "0");
@@ -147,7 +154,7 @@ export function buildPaymentRequest(invoice: Invoice, requestedMode?: PaymentMod
   };
 }
 
-async function rpc(method: string, params: unknown[]) {
+export async function rpc(method: string, params: unknown[]) {
   const response = await fetch(CELO_SEPOLIA.rpcUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -158,6 +165,58 @@ async function rpc(method: string, params: unknown[]) {
   const data = (await response.json()) as { result?: unknown; error?: { message?: string } };
   if (!response.ok || data.error) throw new Error(data.error?.message || `RPC ${method} failed.`);
   return data.result;
+}
+
+export async function findSepoliaPaymentCandidates(invoice: Invoice, requestedMode?: PaymentMode, lookbackBlocks = 120): Promise<PaymentPollCandidate[]> {
+  const mode = resolveInvoicePaymentMode(invoice, requestedMode || invoice.paymentRequest?.mode);
+  const latestHex = await rpc("eth_blockNumber", []) as string;
+  const latestBlock = Number.parseInt(latestHex, 16);
+  const fromBlock = Math.max(0, latestBlock - lookbackBlocks);
+  const recipient = normalizeAddress(invoice.recipientAddress);
+  const candidates = new Map<string, PaymentPollCandidate>();
+
+  if (mode === "stable") {
+    if (!CELO_SEPOLIA.stableToken.address) return [];
+    const expectedAmount = parseUnits(invoice.display.amount, CELO_SEPOLIA.stableToken.decimals);
+    const logs = await rpc("eth_getLogs", [{
+      address: CELO_SEPOLIA.stableToken.address,
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: latestHex,
+      topics: [TRANSFER_TOPIC, null, toPaddedTopicAddress(recipient)],
+    }]) as Array<{ transactionHash?: string; blockNumber?: string; data?: string }>;
+
+    for (const log of logs) {
+      if (!log.transactionHash || typeof log.data !== "string") continue;
+      if (BigInt(log.data) < expectedAmount) continue;
+      candidates.set(log.transactionHash, {
+        txHash: log.transactionHash,
+        blockNumber: log.blockNumber ? Number.parseInt(log.blockNumber, 16) : undefined,
+        mode,
+        source: "erc20-transfer-log",
+      });
+    }
+
+    return [...candidates.values()].sort((a, b) => (b.blockNumber ?? 0) - (a.blockNumber ?? 0));
+  }
+
+  const expectedAmount = parseUnits(invoice.display.amount, CELO_SEPOLIA.nativeCurrency.decimals);
+  for (let block = latestBlock; block >= fromBlock; block -= 1) {
+    const blockData = await rpc("eth_getBlockByNumber", [`0x${block.toString(16)}`, true]) as { transactions?: Array<Record<string, string>> } | null;
+    for (const tx of blockData?.transactions ?? []) {
+      if (normalizeAddress(tx.to || "") !== recipient) continue;
+      const txValue = typeof tx.value === "string" ? BigInt(tx.value) : BigInt(0);
+      if (txValue < expectedAmount) continue;
+      if (!tx.hash) continue;
+      candidates.set(tx.hash, {
+        txHash: tx.hash,
+        blockNumber: block,
+        mode,
+        source: "native-transfer-scan",
+      });
+    }
+  }
+
+  return [...candidates.values()].sort((a, b) => (b.blockNumber ?? 0) - (a.blockNumber ?? 0));
 }
 
 export async function verifySepoliaPayment(invoice: Invoice, txHash: string, requestedMode?: PaymentMode): Promise<PaymentVerificationResult> {

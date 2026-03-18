@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:import-json": "node scripts/json-to-sqlite.mjs",
-    "db:export-json": "node scripts/sqlite-to-json.mjs"
+    "db:export-json": "node scripts/sqlite-to-json.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "dependencies": {
     "next": "16.1.7",

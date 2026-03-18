@@ -70,11 +70,42 @@ Primary store:
 Compatibility/backup flows:
 - `npm run db:import-json` — import `data/invoices.json` into SQLite
 - `npm run db:export-json` — export SQLite back to `data/invoices.json`
+- `npm run smoke` — run a lightweight API smoke test against a running local app (`SMOKE_BASE_URL` optional)
 
 Behavior notes:
 - On first run, if the SQLite DB is empty, the app bootstraps from `data/invoices.json` when present.
 - Runtime storage now uses normalized SQLite tables for invoices, events, payment requests, and payment verifications.
+- SQLite schema migrations are versioned with `PRAGMA user_version`.
 - SQLite runtime sidecar files (`*.db-wal`, `*.db-shm`) are generated locally and ignored in git.
+
+## Auth
+
+Simple operator auth is supported for demo/public deployments.
+
+Required env vars:
+- `DEMO_ADMIN_PASSWORD`
+- `SESSION_SECRET`
+
+Behavior:
+- operator/admin pages are protected behind `/login`
+- public client checkout at `/pay/[id]` stays open
+- sensitive operator API routes require an authenticated session cookie
+
+Protected routes:
+- `/`
+- `/roadmap`
+- `/invoices/*`
+- `POST /api/invoices`
+- `POST /api/invoices/reset`
+- `POST /api/invoices/:id/status`
+- `POST /api/invoices/:id/reminder`
+- `POST /api/reconciliation/poll`
+- `POST /api/webhooks/payments/test`
+
+Public routes:
+- `/login`
+- `/pay/[id]`
+- auth login/logout endpoints
 
 ## Optional environment configuration
 
@@ -217,6 +248,50 @@ Then:
 - `POST /api/invoices/:id/reminder` — trigger reminder stub
 - `POST /api/invoices/:id/checkout` — generate request, open wallet handoff, choose payment mode, and verify tx hash
 - `POST /api/invoices/reset` — restore the seeded demo dataset
+- `POST /api/webhooks/payments/test` — internal/test webhook reconciliation endpoint
+- `POST /api/reconciliation/poll` — manually trigger recent-block polling on Celo Sepolia for unpaid invoices
+
+### Test webhook reconciliation
+
+This first pass adds an internal webhook path that:
+- stores the raw event
+- matches an invoice by payment `reference`
+- reuses the existing onchain verification logic
+- only marks the invoice paid if verification succeeds
+
+Example payload:
+
+```json
+{
+  "eventId": "evt-demo-1",
+  "reference": "sep-530436-lvaro",
+  "txHash": "0x...",
+  "mode": "stable"
+}
+```
+
+If you want to test the matching path without a real tx hash yet, sending an invalid hash should still create a webhook event and reconciliation attempt, then fail verification safely.
+
+### Celo Sepolia polling
+
+This pass also adds a manual polling endpoint and dashboard button.
+
+What it does:
+- scans recent unpaid invoices that already have a generated payment request
+- for stable-token invoices: checks recent ERC-20 `Transfer` logs to the invoice recipient
+- for native CELO invoices: scans recent blocks for direct transfers to the recipient
+- reuses the same onchain verifier before marking anything paid
+
+Manual API trigger:
+
+```bash
+curl -X POST http://localhost:3000/api/reconciliation/poll \
+  -H 'Content-Type: application/json' \
+  -d '{"lookbackBlocks":120}'
+```
+
+UI trigger:
+- on the dashboard, click **Poll Celo Sepolia**
 
 ## Notes
 

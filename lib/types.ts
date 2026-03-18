@@ -157,3 +157,36 @@ export interface PaymentRailProvider {
   createRequest(invoice: Invoice, mode?: PaymentMode): PaymentRequest;
   openWallet(invoice: Invoice, sessionId: string, mode?: PaymentMode): PaymentRequest;
 }
+
+export interface PaymentWebhookEventInput {
+  providerKey: string;
+  externalEventId?: string;
+  eventType: string;
+  payload: unknown;
+  signatureValid: boolean;
+}
+
+export type PaymentWebhookProcessingStatus = "received" | "processed" | "ignored" | "failed";
+
+export interface PaymentWebhookEventRecord extends PaymentWebhookEventInput {
+  id: string;
+  receivedAt: string;
+  processingStatus: PaymentWebhookProcessingStatus;
+  errorMessage?: string;
+}
+
+export type ReconciliationOutcome = "matched" | "not_found" | "verification_failed" | "already_paid" | "processed";
+
+export interface ReconciliationAttemptInput {
+  invoiceId?: string;
+  webhookEventId?: string;
+  txHash?: string;
+  reference?: string;
+  outcome: ReconciliationOutcome;
+  summary: string;
+}
+
+export interface ReconciliationAttemptRecord extends ReconciliationAttemptInput {
+  id: string;
+  attemptedAt: string;
+}

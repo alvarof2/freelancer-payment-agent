@@ -1,20 +1,28 @@
 import Link from "next/link";
 import { AgentAssistantPanel } from "@/components/agent-assistant-panel";
 import { DemoResetButton } from "@/components/demo-reset-button";
+import { PollPaymentsButton } from "@/components/poll-payments-button";
+import { PaymentOpsPanel } from "@/components/payment-ops-panel";
 import { InvoiceAgentCard } from "@/components/invoice-agent-card";
 import { StatusBadge } from "@/components/status-badge";
 import { getInvoiceAgentInsight, getWeeklyFinanceSummary } from "@/lib/agent";
-import { getEarningsSummary, getInvoices } from "@/lib/data";
+import { getEarningsSummary, getInvoices, getRecentReconciliationAttempts, getRecentWebhookEvents } from "@/lib/data";
 import { formatAssetBreakdown, formatDate, getInvoiceDisplayAmount } from "@/lib/format";
 
 export default async function HomePage() {
-  const [summary, invoices] = await Promise.all([getEarningsSummary(), getInvoices()]);
+  const [summary, invoices, webhookEvents, reconciliationAttempts] = await Promise.all([
+    getEarningsSummary(),
+    getInvoices(),
+    getRecentWebhookEvents(),
+    getRecentReconciliationAttempts(),
+  ]);
   const recentInvoices = invoices.slice(0, 5);
   const featuredInvoice = invoices[0];
   const celoReadyCount = invoices.filter((invoice) => invoice.status !== "paid" && invoice.paymentRoute.networkLabel.toLowerCase().includes("celo")).length;
   const invoiceInsights = invoices.map((invoice) => ({ invoice, insight: getInvoiceAgentInsight(invoice) }));
   const followUpNow = invoiceInsights.filter(({ insight }) => insight.followUpNow).slice(0, 2);
   const weeklyFinanceSummary = getWeeklyFinanceSummary(invoices, summary);
+  const pendingInvoices = invoices.filter((invoice) => invoice.status !== "paid" && invoice.paymentRequest).slice(0, 6);
 
   return (
     <main className="space-y-8">
@@ -71,7 +79,10 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <DemoResetButton />
+          <div className="space-y-3">
+            <DemoResetButton />
+            <PollPaymentsButton />
+          </div>
         </div>
       </section>
 
@@ -83,6 +94,12 @@ export default async function HomePage() {
         <MetricCard label="Outstanding pipeline" value={formatAssetBreakdown(summary.outstandingByAsset)} tone="blue" />
         <MetricCard label="Follow-up now" value={String(weeklyFinanceSummary.followUpNowCount)} tone="violet" />
       </section>
+
+      <PaymentOpsPanel
+        pendingInvoices={pendingInvoices}
+        webhookEvents={webhookEvents}
+        attempts={reconciliationAttempts}
+      />
 
       {followUpNow.length > 0 ? (
         <section className="grid gap-4 lg:grid-cols-2">

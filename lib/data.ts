@@ -3,7 +3,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { getInvoiceAgentInsight } from "@/lib/agent";
-import { AssetAmount, EarningsSummary, Invoice, InvoiceEvent, InvoiceEventType, InvoiceInput, PaymentMode, PaymentRequest, PaymentStatus, PaymentVerification, PaymentRoute, SettlementAsset } from "@/lib/types";
+import { AssetAmount, EarningsSummary, Invoice, InvoiceEvent, InvoiceEventType, InvoiceInput, PaymentMode, PaymentRequest, PaymentStatus, PaymentVerification, PaymentRoute, PaymentWebhookEventInput, PaymentWebhookEventRecord, ReconciliationAttemptInput, ReconciliationAttemptRecord, SettlementAsset } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "invoices.json");
@@ -16,9 +16,12 @@ const DEFAULT_NETWORK_KEY = "celo-sepolia";
 const DEFAULT_NETWORK_LABEL = "Celo Sepolia";
 
 type InvoiceRow = Record<string, unknown>;
+type WebhookEventRow = Record<string, unknown>;
+type ReconciliationAttemptRow = Record<string, unknown>;
 
 let db: DatabaseSync | null = null;
 let storeReadyPromise: Promise<void> | null = null;
+const SCHEMA_VERSION = 1;
 
 function isoDaysFromNow(days: number) {
   return new Date(Date.now() + days * DAY_MS).toISOString();
@@ -175,82 +178,111 @@ function buildSeedInvoices(): Invoice[] {
 function getDb() {
   if (!db) {
     db = new DatabaseSync(sqliteFile);
-    db.exec(`
-      PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS invoices (
-        id TEXT PRIMARY KEY,
-        client_name TEXT NOT NULL,
-        client_email TEXT NOT NULL,
-        project_name TEXT NOT NULL,
-        description TEXT NOT NULL,
-        display_amount REAL NOT NULL,
-        display_currency TEXT NOT NULL,
-        due_date TEXT NOT NULL,
-        issued_at TEXT NOT NULL,
-        recipient_address TEXT NOT NULL,
-        payment_route_json TEXT NOT NULL,
-        status TEXT NOT NULL,
-        reminder_count INTEGER NOT NULL DEFAULT 0,
-        last_reminder_at TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC);
-      CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
-
-      CREATE TABLE IF NOT EXISTS invoice_events (
-        id TEXT PRIMARY KEY,
-        invoice_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        title TEXT NOT NULL,
-        detail TEXT NOT NULL,
-        at TEXT NOT NULL,
-        FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-      );
-      CREATE INDEX IF NOT EXISTS idx_invoice_events_invoice_at ON invoice_events(invoice_id, at DESC);
-
-      CREATE TABLE IF NOT EXISTS invoice_payment_requests (
-        invoice_id TEXT PRIMARY KEY,
-        session_id TEXT NOT NULL,
-        mode TEXT NOT NULL,
-        state TEXT NOT NULL,
-        wallet TEXT NOT NULL,
-        route_label TEXT NOT NULL,
-        network TEXT NOT NULL,
-        network_key TEXT NOT NULL,
-        chain_id INTEGER NOT NULL,
-        rpc_url TEXT NOT NULL,
-        settlement_asset_json TEXT NOT NULL,
-        amount REAL NOT NULL,
-        amount_formatted TEXT NOT NULL,
-        amount_base_units TEXT NOT NULL,
-        recipient TEXT NOT NULL,
-        recipient_short TEXT NOT NULL,
-        fee_estimate TEXT NOT NULL,
-        reference TEXT NOT NULL,
-        memo TEXT NOT NULL,
-        expires_at TEXT NOT NULL,
-        deep_link TEXT NOT NULL,
-        checkout_url TEXT NOT NULL,
-        estimated_arrival TEXT NOT NULL,
-        explorer_url TEXT NOT NULL,
-        tx_hash TEXT,
-        status_copy TEXT NOT NULL,
-        FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-      );
-
-      CREATE TABLE IF NOT EXISTS invoice_payment_verifications (
-        invoice_id TEXT PRIMARY KEY,
-        tx_hash TEXT NOT NULL,
-        verified_at TEXT NOT NULL,
-        block_number INTEGER,
-        explorer_url TEXT,
-        summary TEXT NOT NULL,
-        FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-      );
-    `);
+    db.exec("PRAGMA journal_mode = WAL;");
   }
   return db;
+}
+
+function applySchemaV1(database: DatabaseSync) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id TEXT PRIMARY KEY,
+      client_name TEXT NOT NULL,
+      client_email TEXT NOT NULL,
+      project_name TEXT NOT NULL,
+      description TEXT NOT NULL,
+      display_amount REAL NOT NULL,
+      display_currency TEXT NOT NULL,
+      due_date TEXT NOT NULL,
+      issued_at TEXT NOT NULL,
+      recipient_address TEXT NOT NULL,
+      payment_route_json TEXT NOT NULL,
+      status TEXT NOT NULL,
+      reminder_count INTEGER NOT NULL DEFAULT 0,
+      last_reminder_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_invoices_created_at ON invoices(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+
+    CREATE TABLE IF NOT EXISTS invoice_events (
+      id TEXT PRIMARY KEY,
+      invoice_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      detail TEXT NOT NULL,
+      at TEXT NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_invoice_events_invoice_at ON invoice_events(invoice_id, at DESC);
+
+    CREATE TABLE IF NOT EXISTS invoice_payment_requests (
+      invoice_id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      mode TEXT NOT NULL,
+      state TEXT NOT NULL,
+      wallet TEXT NOT NULL,
+      route_label TEXT NOT NULL,
+      network TEXT NOT NULL,
+      network_key TEXT NOT NULL,
+      chain_id INTEGER NOT NULL,
+      rpc_url TEXT NOT NULL,
+      settlement_asset_json TEXT NOT NULL,
+      amount REAL NOT NULL,
+      amount_formatted TEXT NOT NULL,
+      amount_base_units TEXT NOT NULL,
+      recipient TEXT NOT NULL,
+      recipient_short TEXT NOT NULL,
+      fee_estimate TEXT NOT NULL,
+      reference TEXT NOT NULL,
+      memo TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      deep_link TEXT NOT NULL,
+      checkout_url TEXT NOT NULL,
+      estimated_arrival TEXT NOT NULL,
+      explorer_url TEXT NOT NULL,
+      tx_hash TEXT,
+      status_copy TEXT NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS invoice_payment_verifications (
+      invoice_id TEXT PRIMARY KEY,
+      tx_hash TEXT NOT NULL,
+      verified_at TEXT NOT NULL,
+      block_number INTEGER,
+      explorer_url TEXT,
+      summary TEXT NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS payment_webhook_events (
+      id TEXT PRIMARY KEY,
+      provider_key TEXT NOT NULL,
+      external_event_id TEXT,
+      event_type TEXT NOT NULL,
+      received_at TEXT NOT NULL,
+      payload_json TEXT NOT NULL,
+      signature_valid INTEGER NOT NULL,
+      processing_status TEXT NOT NULL,
+      error_message TEXT
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_webhook_provider_external ON payment_webhook_events(provider_key, external_event_id);
+
+    CREATE TABLE IF NOT EXISTS invoice_reconciliation_attempts (
+      id TEXT PRIMARY KEY,
+      invoice_id TEXT,
+      webhook_event_id TEXT,
+      tx_hash TEXT,
+      reference TEXT,
+      attempted_at TEXT NOT NULL,
+      outcome TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL,
+      FOREIGN KEY (webhook_event_id) REFERENCES payment_webhook_events(id) ON DELETE SET NULL
+    );
+  `);
 }
 
 function invoiceToRow(invoice: Invoice) {
@@ -735,12 +767,27 @@ async function seedFromJsonIfNeeded(database: DatabaseSync) {
   }
 }
 
+function migrateSchema(database: DatabaseSync) {
+  const versionRow = database.prepare("PRAGMA user_version").get() as { user_version?: number };
+  const currentVersion = Number(versionRow.user_version ?? 0);
+
+  if (currentVersion < 1) {
+    applySchemaV1(database);
+    migrateInvoicesTableIfNeeded(database);
+    database.exec(`PRAGMA user_version = ${SCHEMA_VERSION};`);
+    return;
+  }
+
+  applySchemaV1(database);
+  migrateInvoicesTableIfNeeded(database);
+}
+
 async function ensureStore() {
   if (!storeReadyPromise) {
     storeReadyPromise = (async () => {
       await mkdir(dataDir, { recursive: true });
       const database = getDb();
-      migrateInvoicesTableIfNeeded(database);
+      migrateSchema(database);
       await seedFromJsonIfNeeded(database);
     })();
   }
@@ -855,6 +902,11 @@ export async function getInvoices() {
 export async function getInvoiceById(id: string) {
   const invoices = await getInvoices();
   return invoices.find((invoice) => invoice.id === id) ?? null;
+}
+
+export async function getInvoiceByPaymentReference(reference: string) {
+  const invoices = await getInvoices();
+  return invoices.find((invoice) => invoice.paymentRequest?.reference === reference) ?? null;
 }
 
 export async function createInvoice(input: InvoiceInput) {
@@ -988,6 +1040,112 @@ export async function resetDemoData() {
 
   await writeInvoices(seededInvoices);
   return seededInvoices;
+}
+
+function rowToWebhookEvent(row: WebhookEventRow): PaymentWebhookEventRecord {
+  return {
+    id: String(row.id),
+    providerKey: String(row.provider_key),
+    externalEventId: typeof row.external_event_id === "string" ? row.external_event_id : undefined,
+    eventType: String(row.event_type),
+    receivedAt: String(row.received_at),
+    payload: JSON.parse(String(row.payload_json)),
+    signatureValid: Boolean(row.signature_valid),
+    processingStatus: row.processing_status as PaymentWebhookEventRecord["processingStatus"],
+    errorMessage: typeof row.error_message === "string" ? row.error_message : undefined,
+  };
+}
+
+function rowToReconciliationAttempt(row: ReconciliationAttemptRow): ReconciliationAttemptRecord {
+  return {
+    id: String(row.id),
+    invoiceId: typeof row.invoice_id === "string" ? row.invoice_id : undefined,
+    webhookEventId: typeof row.webhook_event_id === "string" ? row.webhook_event_id : undefined,
+    txHash: typeof row.tx_hash === "string" ? row.tx_hash : undefined,
+    reference: typeof row.reference === "string" ? row.reference : undefined,
+    attemptedAt: String(row.attempted_at),
+    outcome: row.outcome as ReconciliationAttemptRecord["outcome"],
+    summary: String(row.summary),
+  };
+}
+
+export async function createWebhookEvent(input: PaymentWebhookEventInput) {
+  await ensureStore();
+  const database = getDb();
+  const existing = input.externalEventId
+    ? database.prepare("SELECT * FROM payment_webhook_events WHERE provider_key = ? AND external_event_id = ?").get(input.providerKey, input.externalEventId) as WebhookEventRow | undefined
+    : undefined;
+
+  if (existing) return rowToWebhookEvent(existing);
+
+  const id = `whe_${randomUUID().slice(0, 8)}`;
+  const receivedAt = new Date().toISOString();
+  database.prepare(`
+    INSERT INTO payment_webhook_events (
+      id, provider_key, external_event_id, event_type, received_at, payload_json,
+      signature_valid, processing_status, error_message
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    input.providerKey,
+    input.externalEventId ?? null,
+    input.eventType,
+    receivedAt,
+    JSON.stringify(input.payload),
+    input.signatureValid ? 1 : 0,
+    "received",
+    null,
+  );
+
+  return {
+    id,
+    providerKey: input.providerKey,
+    externalEventId: input.externalEventId,
+    eventType: input.eventType,
+    receivedAt,
+    payload: input.payload,
+    signatureValid: input.signatureValid,
+    processingStatus: "received",
+  } satisfies PaymentWebhookEventRecord;
+}
+
+export async function updateWebhookEventStatus(id: string, processingStatus: PaymentWebhookEventRecord["processingStatus"], errorMessage?: string) {
+  await ensureStore();
+  const database = getDb();
+  database.prepare("UPDATE payment_webhook_events SET processing_status = ?, error_message = ? WHERE id = ?").run(processingStatus, errorMessage ?? null, id);
+}
+
+export async function recordReconciliationAttempt(input: ReconciliationAttemptInput) {
+  await ensureStore();
+  const database = getDb();
+  database.prepare(`
+    INSERT INTO invoice_reconciliation_attempts (
+      id, invoice_id, webhook_event_id, tx_hash, reference, attempted_at, outcome, summary
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    `rec_${randomUUID().slice(0, 8)}`,
+    input.invoiceId ?? null,
+    input.webhookEventId ?? null,
+    input.txHash ?? null,
+    input.reference ?? null,
+    new Date().toISOString(),
+    input.outcome,
+    input.summary,
+  );
+}
+
+export async function getRecentWebhookEvents(limit = 6) {
+  await ensureStore();
+  const database = getDb();
+  const rows = database.prepare("SELECT * FROM payment_webhook_events ORDER BY received_at DESC LIMIT ?").all(limit) as WebhookEventRow[];
+  return rows.map(rowToWebhookEvent);
+}
+
+export async function getRecentReconciliationAttempts(limit = 8) {
+  await ensureStore();
+  const database = getDb();
+  const rows = database.prepare("SELECT * FROM invoice_reconciliation_attempts ORDER BY attempted_at DESC LIMIT ?").all(limit) as ReconciliationAttemptRow[];
+  return rows.map(rowToReconciliationAttempt);
 }
 
 function addAssetAmount(map: Map<string, number>, asset: string, amount: number) {
