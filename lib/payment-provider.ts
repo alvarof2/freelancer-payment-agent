@@ -11,7 +11,7 @@ function withState(request: PaymentRequest, state: PaymentRequest["state"], stat
 
 const celoSepoliaProvider: PaymentRailProvider = {
   key: "minipay-celo-sepolia",
-  label: "MiniPay on Celo Sepolia",
+  label: "Celo Checkout on Celo Sepolia",
   createRequest(invoice: Invoice, mode?: PaymentMode) {
     return buildPaymentRequest(invoice, mode);
   },

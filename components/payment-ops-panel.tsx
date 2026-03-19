@@ -15,10 +15,10 @@ export function PaymentOpsPanel({
     <section className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm shadow-black/5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500">Payment Ops / Debug</p>
-          <h3 className="text-2xl font-semibold tracking-tight">Live reconciliation safety net</h3>
+          <p className="text-sm font-medium text-slate-500">Payment ops console</p>
+          <h3 className="text-2xl font-semibold tracking-tight">Live reconciliation monitor</h3>
         </div>
-        <p className="text-sm text-slate-500">Use this panel if you need to explain or debug payment detection during the demo.</p>
+        <p className="text-sm text-slate-500">Use this panel to explain payment detection, matching, and settlement outcomes.</p>
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">

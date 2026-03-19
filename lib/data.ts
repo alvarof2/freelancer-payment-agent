@@ -11,7 +11,7 @@ const sqliteFile = path.join(dataDir, "invoices.db");
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_RECIPIENT = "0x4444444444444444444444444444444444444444";
 const DEFAULT_PROVIDER_KEY = "minipay-celo-sepolia";
-const DEFAULT_PROVIDER_LABEL = "MiniPay";
+const DEFAULT_PROVIDER_LABEL = "Celo Checkout";
 const DEFAULT_NETWORK_KEY = "celo-sepolia";
 const DEFAULT_NETWORK_LABEL = "Celo Sepolia";
 
@@ -120,7 +120,7 @@ function buildSeedInvoices(): Invoice[] {
       createdAt: isoDaysFromNow(-2),
       updatedAt: isoDaysFromNow(-0.5),
       events: [
-        createEvent("created", "Invoice created", "Created from the freelancer dashboard with MiniPay on Celo Sepolia as the payment route.", isoDaysFromNow(-2)),
+        createEvent("created", "Invoice created", "Created from the freelancer dashboard with a Celo checkout flow on Celo Sepolia.", isoDaysFromNow(-2)),
         createEvent("share_link_ready", "Shareable checkout link prepared", "Hosted client payment page is ready to send.", isoDaysFromNow(-2)),
         createEvent("client_viewed", "Client opened the invoice", "Northstar Labs viewed the hosted invoice and payment instructions.", isoDaysFromNow(-1.5)),
         createEvent("reminder_generated", "Reminder draft generated", "A checkout-oriented reminder was drafted after the client viewed but did not complete payment.", isoDaysFromNow(-1)),
@@ -145,7 +145,7 @@ function buildSeedInvoices(): Invoice[] {
       updatedAt: isoDaysFromNow(-1.1),
       events: [
         createEvent("created", "Invoice created", "Orbit Studio invoice created for the landing page implementation milestone.", isoDaysFromNow(-10)),
-        createEvent("share_link_ready", "Shareable checkout link prepared", "Hosted client payment page was generated for the MiniPay handoff.", isoDaysFromNow(-10)),
+        createEvent("share_link_ready", "Shareable checkout link prepared", "Hosted client payment page was generated for the Celo checkout handoff.", isoDaysFromNow(-10)),
         createEvent("reminder_generated", "Reminder draft generated", "First reminder drafted after no acknowledgement in the initial follow-up window.", isoDaysFromNow(-5)),
         createEvent("status_changed", "Invoice marked overdue", "Due date passed without settlement, so the invoice moved into overdue follow-up mode.", isoDaysFromNow(-3)),
         createEvent("reminder_generated", "Second reminder drafted", "A firmer reminder was generated to recover the overdue receivable.", isoDaysFromNow(-1.1)),
@@ -447,7 +447,7 @@ function normalizePaymentRequest(raw: Record<string, unknown>, invoice: Invoice)
     sessionId: String(request.sessionId ?? `cp_${randomUUID().slice(0, 12)}`),
     mode: (request.mode as PaymentMode) ?? (settlementAsset.kind === "native" ? "native" : "stable"),
     state: (request.state as PaymentRequest["state"]) ?? "quote_ready",
-    wallet: String(request.wallet ?? "MiniPay-compatible wallet"),
+    wallet: String(request.wallet ?? "Celo-compatible wallet"),
     routeLabel: String(request.routeLabel ?? request.rail ?? `${invoice.paymentRoute.providerLabel} / ${invoice.paymentRoute.networkLabel} / ${settlementAsset.code}`),
     network: String(request.network ?? invoice.paymentRoute.networkLabel),
     networkKey: (request.networkKey as PaymentRequest["networkKey"]) ?? invoice.paymentRoute.networkKey,

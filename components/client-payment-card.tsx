@@ -420,7 +420,7 @@ export function ClientPaymentCard({ invoice }: { invoice: Invoice }) {
           <PreviewRow label="Invoice currency" value={invoice.display.currency} />
           <PreviewRow label="Invoice amount" value={formatDisplayAmount(invoice.display)} />
           <PreviewRow label="Settlement asset" value={activeSettlementAsset.code} />
-          <PreviewRow label="Wallet" value={quote?.wallet ?? "MiniPay-compatible wallet"} />
+          <PreviewRow label="Wallet" value={quote?.wallet ?? "Celo-compatible wallet"} />
           <PreviewRow label="Network" value={quote?.network ?? "Celo Sepolia"} />
           <PreviewRow label="Chain ID" value={quote ? String(quote.chainId) : "11142220"} />
           <PreviewRow label="Payment mode" value={activeMode === "stable" ? "Stable token" : "Native CELO"} />

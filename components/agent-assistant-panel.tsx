@@ -29,7 +29,7 @@ export function AgentAssistantPanel({ summary }: { summary: WeeklyFinanceSummary
         <ol className="mt-3 space-y-2 leading-6">
           <li>1. Clear overdue invoices first so the story starts with recovery of at-risk cash.</li>
           <li>2. Nudge viewed invoices close to the due date while the client already has context.</li>
-          <li>3. Use the hosted MiniPay checkout link as the single CTA in each reminder.</li>
+          <li>3. Use the hosted Celo checkout link as the single CTA in each reminder.</li>
         </ol>
         {summary.topPriorityIds.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-3">

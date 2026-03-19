@@ -92,7 +92,7 @@ export function InvoiceActions({ id, status, payHref }: { id: string; status: Pa
         <p className="font-semibold text-slate-950">Client-facing step</p>
         <p className="mt-1">Want the stronger demo beat? Open the checkout and walk through the payment request, wallet handoff, tx hash, and final settlement in stable-token or native-CELO mode.</p>
         <Link href={payHref ?? `/pay/${id}`} className="mt-3 inline-flex rounded-full border border-emerald-200 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-white">
-          Open MiniPay checkout
+          Open Celo checkout
         </Link>
       </div>
 

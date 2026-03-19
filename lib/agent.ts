@@ -58,19 +58,19 @@ export function getInvoiceAgentInsight(invoice: Invoice): InvoiceAgentInsight {
   if (invoice.status === "paid") {
     followUpReason = "Invoice already settled.";
     suggestedNextAction = "Archive as paid";
-    suggestedNextActionDetail = "Use this as proof that the MiniPay/Celo settlement loop closes cleanly in the demo.";
+    suggestedNextActionDetail = "Use this as proof that the Celo settlement loop closes cleanly in the demo.";
   } else if (invoice.status === "overdue") {
     urgency = "high";
     followUpNow = true;
     followUpReason = `${invoice.clientName} is overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? "" : "s"}.`;
     suggestedNextAction = "Send a firm follow-up now";
-    suggestedNextActionDetail = "Share the checkout link again, ask for a payment date, and offer to walk the client through the MiniPay handoff live.";
+    suggestedNextActionDetail = "Share the checkout link again, ask for a payment date, and offer to walk the client through the Celo payment flow live.";
   } else if (invoice.status === "viewed" && daysUntilDue <= 2) {
     urgency = "high";
     followUpNow = true;
     followUpReason = `Client viewed the invoice and it is due ${daysUntilDue <= 0 ? "now" : `in ${daysUntilDue} day${daysUntilDue === 1 ? "" : "s"}`}.`;
     suggestedNextAction = "Nudge for checkout completion";
-    suggestedNextActionDetail = "The client has already engaged. Prompt them to open MiniPay and finish the configured settlement flow while the invoice is top of mind.";
+    suggestedNextActionDetail = "The client has already engaged. Prompt them to open the checkout and finish the configured settlement flow while the invoice is top of mind.";
   } else if (invoice.status === "sent" && daysUntilDue <= 3) {
     urgency = "medium";
     followUpNow = true;
@@ -81,7 +81,7 @@ export function getInvoiceAgentInsight(invoice: Invoice): InvoiceAgentInsight {
     urgency = "medium";
     followUpReason = "Client has seen the invoice but has not paid yet.";
     suggestedNextAction = "Prepare a checkout-oriented reminder";
-    suggestedNextActionDetail = "Mention that the payment request is already configured for MiniPay on Celo and can be completed in one flow.";
+    suggestedNextActionDetail = "Mention that the payment request is already configured on Celo and can be completed in one flow.";
   } else if (invoice.status === "sent") {
     followUpReason = "Recently sent invoice still within a healthy follow-up window.";
     suggestedNextAction = "Wait, then send a gentle reminder";
@@ -106,10 +106,10 @@ export function getInvoiceAgentInsight(invoice: Invoice): InvoiceAgentInsight {
 
   const dueLine =
     invoice.status === "overdue"
-      ? "It is now overdue, and the hosted MiniPay checkout is still ready to use."
+      ? "It is now overdue, and the hosted Celo checkout is still ready to use."
       : daysUntilDue <= 0
-        ? "It is due today, and the hosted MiniPay checkout is ready whenever you are."
-        : `It is due ${daysUntilDue === 1 ? "tomorrow" : `in ${daysUntilDue} days`}, and the hosted MiniPay checkout is ready whenever you want to complete it.`;
+        ? "It is due today, and the hosted Celo checkout is ready whenever you are."
+        : `It is due ${daysUntilDue === 1 ? "tomorrow" : `in ${daysUntilDue} days`}, and the hosted Celo checkout is ready whenever you want to complete it.`;
 
   const closeLine =
     tone === "firm"

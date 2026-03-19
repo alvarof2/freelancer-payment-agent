@@ -79,7 +79,7 @@ function getSettlementConfig(mode: PaymentMode) {
     return {
       mode,
       settlementAsset,
-      routeLabel: `MiniPay / ${CELO_SEPOLIA.name} / ${settlementAsset.code}`,
+      routeLabel: `Celo Checkout / ${CELO_SEPOLIA.name} / ${settlementAsset.code}`,
       feeEstimate: "Network fee paid in CELO",
       explorerUrl: `${CELO_SEPOLIA.explorerBaseUrl}/token/${CELO_SEPOLIA.stableToken.address}`,
       statusCopy: `Payment request ready for ${settlementAsset.code} on ${CELO_SEPOLIA.name}. Open a wallet or paste a transaction hash after sending.`,
@@ -96,7 +96,7 @@ function getSettlementConfig(mode: PaymentMode) {
   return {
     mode,
     settlementAsset,
-    routeLabel: `MiniPay / ${CELO_SEPOLIA.name} / Native ${settlementAsset.code}`,
+    routeLabel: `Celo Checkout / ${CELO_SEPOLIA.name} / Native ${settlementAsset.code}`,
     feeEstimate: "Value and gas are both paid in CELO",
     explorerUrl: CELO_SEPOLIA.explorerBaseUrl,
     statusCopy: `Payment request ready for native ${settlementAsset.code} on ${CELO_SEPOLIA.name}. Open a wallet or paste a transaction hash after sending.`,
@@ -130,7 +130,7 @@ export function buildPaymentRequest(invoice: Invoice, requestedMode?: PaymentMod
     sessionId,
     mode,
     state: "quote_ready",
-    wallet: "MiniPay-compatible wallet",
+    wallet: "Celo-compatible wallet",
     routeLabel: config.routeLabel,
     network: CELO_SEPOLIA.name,
     networkKey: CELO_SEPOLIA.networkKey,

@@ -28,10 +28,10 @@ export default async function HomePage() {
     <main className="space-y-8">
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.9fr]">
         <div className="rounded-[2rem] bg-slate-950 p-8 text-white shadow-lg shadow-slate-950/10">
-          <p className="text-sm font-medium text-emerald-200">Hackathon-ready payment ops demo</p>
-          <h2 className="mt-2 max-w-3xl text-4xl font-semibold tracking-tight">Create invoices from plain English, launch a Celo checkout, and show an agent suggesting the next best follow-up.</h2>
+          <p className="text-sm font-medium text-emerald-200">Freelancer payment ops copilot</p>
+          <h2 className="mt-2 max-w-3xl text-4xl font-semibold tracking-tight">Create invoices from plain English, send a Celo checkout, and reconcile payment automatically.</h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
-            The app stays fully local, keeps blockchain interactions mocked behind API routes and interfaces, and now adds a visible event history, a polished shareable client flow, and one-click demo reset for judge runs.
+            The app stays fully local, keeps blockchain interactions mocked behind API routes and interfaces, and adds visible event history, a polished shareable client flow, and one-click reset for repeat walkthroughs.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/invoices/new" className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
@@ -39,7 +39,7 @@ export default async function HomePage() {
             </Link>
             {featuredInvoice ? (
               <Link href={`/pay/${featuredInvoice.id}`} className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                Open MiniPay sample checkout
+                Open Celo sample checkout
               </Link>
             ) : null}
             <Link href="/roadmap" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
@@ -48,9 +48,9 @@ export default async function HomePage() {
           </div>
           <div className="mt-8 grid gap-3 md:grid-cols-4">
             <StoryPill step="1" text="Paste a prompt like ‘Invoice Acme €500 for landing page design due next Friday’." />
-            <StoryPill step="2" text="Review the parsed fields and create the invoice with a MiniPay/Celo checkout link." />
+            <StoryPill step="2" text="Review the parsed fields and create the invoice with a Celo checkout link." />
             <StoryPill step="3" text="Open the invoice detail page and show the agent’s reminder draft plus event timeline." />
-            <StoryPill step="4" text="Finish in the hosted checkout flow, then reset the demo for the next judge." />
+            <StoryPill step="4" text="Finish in the hosted checkout flow, then reset the data for the next walkthrough." />
           </div>
         </div>
 
@@ -122,12 +122,12 @@ export default async function HomePage() {
       <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="rounded-[2rem] border border-black/5 bg-white p-6 shadow-sm shadow-black/5">
           <p className="text-sm font-medium text-slate-500">Presentation flow</p>
-          <h3 className="mt-1 text-2xl font-semibold tracking-tight">What to click during the demo</h3>
+          <h3 className="mt-1 text-2xl font-semibold tracking-tight">Recommended walkthrough</h3>
           <ol className="mt-5 space-y-4 text-sm leading-7 text-slate-700">
             <li><span className="font-semibold text-slate-950">Open the invoice composer.</span> Paste a natural-language prompt and hit <span className="font-medium">Parse into fields</span>.</li>
             <li><span className="font-semibold text-slate-950">Create the invoice.</span> The app stores it locally and opens the invoice detail screen.</li>
             <li><span className="font-semibold text-slate-950">Show the agent layer.</span> Use the invoice detail page to demo the reminder draft, suggested next action, and full event timeline.</li>
-            <li><span className="font-semibold text-slate-950">Jump to the MiniPay checkout.</span> Generate the payment request and show the Celo transaction preview plus recent invoice history.</li>
+            <li><span className="font-semibold text-slate-950">Jump to the hosted checkout.</span> Generate the payment request and show the Celo transaction preview plus recent invoice history.</li>
             <li><span className="font-semibold text-slate-950">Close the loop.</span> Verify the submitted tx hash on Celo Sepolia, show the paid state reflected in the dashboard metrics, then hit reset for the next walkthrough.</li>
           </ol>
         </div>

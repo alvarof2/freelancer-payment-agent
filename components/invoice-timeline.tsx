@@ -21,7 +21,7 @@ export function InvoiceTimeline({ events }: { events: InvoiceEvent[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-slate-500">Invoice history</p>
-          <h3 className="text-2xl font-semibold tracking-tight">Timeline for the judge demo</h3>
+          <h3 className="text-2xl font-semibold tracking-tight">Payment timeline</h3>
         </div>
         <p className="text-sm text-slate-500">{events.length} events logged locally</p>
       </div>
