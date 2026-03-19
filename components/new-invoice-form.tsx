@@ -19,6 +19,7 @@ const initialState = {
 };
 
 const examplePrompt = "Invoice Acme Studio 0.1 USDC for landing page implementation due next Friday";
+const EVM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/;
 
 function suggestSettlementAsset(displayCurrency: string, paymentMode: PaymentMode) {
   if (paymentMode === "native") return "CELO";
@@ -63,13 +64,25 @@ export function NewInvoiceForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const normalizedRecipientAddress = form.recipientAddress.trim();
+
+    if (!normalizedRecipientAddress) {
+      setError("Recipient wallet address is required.");
+      return;
+    }
+
+    if (!EVM_ADDRESS_PATTERN.test(normalizedRecipientAddress)) {
+      setError("Enter a valid 0x-prefixed wallet address.");
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
 
     const response = await fetch("/api/invoices", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, amount: Number(form.amount) }),
+      body: JSON.stringify({ ...form, recipientAddress: normalizedRecipientAddress, amount: Number(form.amount) }),
     });
 
     if (!response.ok) {
@@ -207,10 +220,18 @@ export function NewInvoiceForm() {
             </select>
           </Field>
           <Field label="Payment network">
-            <input value="Celo Sepolia via MiniPay" readOnly className="input bg-slate-50 text-slate-500" />
+            <input value="Celo Sepolia" readOnly className="input bg-slate-50 text-slate-500" />
           </Field>
           <Field label="Recipient wallet address">
-            <input value={form.recipientAddress} onChange={(e) => setForm({ ...form, recipientAddress: e.target.value })} className="input font-mono text-xs" />
+            <input
+              required
+              value={form.recipientAddress}
+              onChange={(e) => setForm({ ...form, recipientAddress: e.target.value })}
+              placeholder="0x..."
+              pattern="^0x[a-fA-F0-9]{40}$"
+              title="Enter a valid 0x-prefixed wallet address"
+              className="input font-mono text-xs"
+            />
           </Field>
         </div>
         <Field label="Description">
